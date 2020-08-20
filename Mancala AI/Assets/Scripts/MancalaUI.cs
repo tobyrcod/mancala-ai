@@ -24,23 +24,29 @@ public class MancalaUI : MonoBehaviour
     }
 
     public void Move(int index) {
+
         if (mancala.TryMove(index)) {
             UpdateUI();
 
-            if (!mancala.isPlayer1Turn) {
-                StartCoroutine(MakeAIMove(Random.Range(1f, 2f)));
+            if (!mancala.GameOver) {
+
+                if (!mancala.isPlayer1Turn) {
+                    StopCoroutine("MakeAIMove");
+                    StartCoroutine(MakeAIMove(Random.Range(1f, 2f)));
+                }
             }
         }
         else {
             Debug.LogError("AI Cant Move");
-        }
+        }     
     }
 
     private IEnumerator MakeAIMove(float waitTime) {
+
         yield return new WaitForSeconds(waitTime);
         Debug.Log("AI MOVE");
 
-        MancalaAI.Minimax(mancala, 3, int.MinValue, int.MaxValue, false);
+        MancalaAI.Minimax(mancala, 6, int.MinValue, int.MaxValue, false);
         Debug.Log(MancalaAI.bestMove);
         Move(MancalaAI.bestMove);
     }

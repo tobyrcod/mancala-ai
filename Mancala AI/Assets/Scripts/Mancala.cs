@@ -14,24 +14,61 @@ public class Mancala
 
     private CellPair cellPairs = new CellPair();
 
-    private const int extraMoveBonus = 5;
+    private const int extraMoveBonus = 100;
+
+    public bool GameOver;
 
     internal bool IsGameOver() {
         List<int> moves = GetPossibleMoves();
-        for (int i = 0; i < moves.Count; i++) {
-            if (CanMoveIndex(moves[i]))
-                return false;
+        if (moves.Count == 0) {
+            List<int> oppMoves = GetPossibleOpponentMoves();
+            Bank oppBank = GetPlayerBank(!isPlayer1Turn);
+            for (int i = 0; i < oppMoves.Count; i++) {
+                oppBank.seedCount += cells[oppMoves[i]].seedCount;
+                cells[oppMoves[i]].seedCount = 0;
+            }
+
+            return true;
         }
-        return true;
+
+        return false;
     }
 
     internal int StaticEvaluation() {
-        int bonus = (isPlayer1Turn) ? 0 : extraMoveBonus;
-        return (player1Bank.seedCount - player2Bank.seedCount) + bonus;
+        int bonus = 0;
+        if (isPlayer1Turn == _isPlayer1Turn) {
+            if (isPlayer1Turn) {
+                bonus = 5;
+            }
+            else {
+                bonus = -5;
+            }
+        }
+        return bonus + (player1Bank.seedCount - player2Bank.seedCount);
     }
 
     internal List<int> GetPossibleMoves() {
+        List<int> potentialMoves = GetPotentialMoves();
+        List<int> possibleMoves = potentialMoves.FindAll(m => cells[m].seedCount > 0);
+        return possibleMoves;
+    }
+
+    internal List<int> GetPossibleOpponentMoves() {
+        List<int> potentialMoves = GetPotentialOpponentMoves();
+        List<int> possibleMoves = potentialMoves.FindAll(m => cells[m].seedCount > 0);
+        return possibleMoves;
+    }
+
+    private List<int> GetPotentialMoves() {
         return (isPlayer1Turn) ? player1Moves : player2Moves;
+    }
+
+    private List<int> GetPotentialOpponentMoves() {
+        return (isPlayer1Turn) ? player2Moves : player1Moves;
+    }
+
+    private Bank GetPlayerBank(bool isPlayer1) {
+        return (isPlayer1) ? player1Bank : player2Bank;
     }
 
     internal Mancala GetStateAfterMove(int possibleMove) {
@@ -41,6 +78,7 @@ public class Mancala
     }
 
     public bool isPlayer1Turn { get; private set; }
+    private bool _isPlayer1Turn = false;
 
     public Mancala() {
         for (int i = 0; i < 6; i++) {
@@ -65,7 +103,7 @@ public class Mancala
 
         isPlayer1Turn = true;
     }
-    public Mancala(List<Cell> player1CellValues, List<Cell> player2CellValues, int player1BankValue, int player2BankValue, bool isPlayer1Turn) {
+    public Mancala(List<Cell> player1CellValues, List<Cell> player2CellValues, int player1BankValue, int player2BankValue, bool isPlayer1Turn, bool _isPlayer1Turn) {
         for (int i = 0; i < 6; i++) {
             player1Moves.Add(cells.Count);
             cells.Add(new Cell(player1CellValues[i].seedCount));
@@ -87,6 +125,7 @@ public class Mancala
         }
 
         this.isPlayer1Turn = isPlayer1Turn;
+        this._isPlayer1Turn = _isPlayer1Turn;
     }
 
     public bool TryMove(int index) {
@@ -100,7 +139,7 @@ public class Mancala
     }
 
     private Mancala DeepCopy() {
-        return new Mancala(cells.GetRange(0, 6), cells.GetRange(7, 6), player1Bank.seedCount, player2Bank.seedCount, isPlayer1Turn);
+        return new Mancala(cells.GetRange(0, 6), cells.GetRange(7, 6), player1Bank.seedCount, player2Bank.seedCount, isPlayer1Turn, _isPlayer1Turn);
     }
 
     private void ApplyMove(int clickedIndex) {
@@ -126,15 +165,36 @@ public class Mancala
 
         } while (placedSeeds < seedCount);
 
+
+        _isPlayer1Turn = isPlayer1Turn;
+
         int playerBankIndex = (isPlayer1Turn) ? player1Bank.index : player2Bank.index;
-        if (playerBankIndex != placeIndex)
+        if (playerBankIndex != placeIndex) {
+
+            if (cells[placeIndex].seedCount == 1) {
+
+                if (GetPossibleMoves().Contains(placeIndex)) {
+
+                    int captureIndex = 12 - placeIndex;
+                    if (cells[captureIndex].seedCount > 0) { 
+
+                        int captureCount = cells[placeIndex].seedCount + cells[captureIndex].seedCount;
+                        cells[placeIndex].seedCount = 0;
+                        cells[captureIndex].seedCount = 0;
+
+                        cells[playerBankIndex].seedCount += captureCount;
+                    }
+                }
+            }
+
             isPlayer1Turn = !isPlayer1Turn;
+        }
+
+        GameOver = IsGameOver();
     }
 
     private bool CanMoveIndex(int index) {
         List<int> moves = GetPossibleMoves();
-        if (cells[index].seedCount == 0)
-            return false;
 
         if (!moves.Contains(index))
             return false;

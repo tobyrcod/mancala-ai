@@ -8,7 +8,7 @@ public static class MancalaAI {
     public static int bestMove = -1;
     //Player 1 is the maximizing player, Player 2 is the minimizing player
     public static int Minimax(Mancala currentState, int depth, int alpha, int beta, bool maximisingPlayer) {
-        if (depth == 0 || currentState.IsGameOver())
+        if (depth == 0 || currentState.GameOver)
             return currentState.StaticEvaluation();
 
         int localBestMove = -1;

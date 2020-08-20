@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using Random = UnityEngine.Random;
 
 public class MancalaUI : MonoBehaviour
 {
@@ -22,9 +24,25 @@ public class MancalaUI : MonoBehaviour
     }
 
     public void Move(int index) {
-        if (mancala.Move(index)) {
+        if (mancala.TryMove(index)) {
             UpdateUI();
+
+            if (!mancala.isPlayer1Turn) {
+                StartCoroutine(MakeAIMove(Random.Range(1f, 2f)));
+            }
         }
+        else {
+            Debug.LogError("AI Cant Move");
+        }
+    }
+
+    private IEnumerator MakeAIMove(float waitTime) {
+        yield return new WaitForSeconds(waitTime);
+        Debug.Log("AI MOVE");
+
+        MancalaAI.Minimax(mancala, 3, int.MinValue, int.MaxValue, false);
+        Debug.Log(MancalaAI.bestMove);
+        Move(MancalaAI.bestMove);
     }
 
     private void UpdateUI() {

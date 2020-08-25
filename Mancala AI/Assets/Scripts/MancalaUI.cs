@@ -32,7 +32,7 @@ public class MancalaUI : MonoBehaviour
 
                 if (!mancala.isPlayer1Turn) {
                     StopCoroutine("MakeAIMove");
-                    StartCoroutine(MakeAIMove(Random.Range(1f, 2f)));
+                    StartCoroutine(MakeAIMove(0f));
                 }
             }
         }
@@ -46,7 +46,7 @@ public class MancalaUI : MonoBehaviour
         yield return new WaitForSeconds(waitTime);
         Debug.Log("AI MOVE");
 
-        MancalaAI.Minimax(mancala, 6, int.MinValue, int.MaxValue, false);
+        MancalaAI.Minimax(mancala, 7, int.MinValue, int.MaxValue, false);
         Debug.Log(MancalaAI.bestMove);
         Move(MancalaAI.bestMove);
     }

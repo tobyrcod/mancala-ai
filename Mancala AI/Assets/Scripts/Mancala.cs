@@ -34,7 +34,7 @@ public class Mancala
         return false;
     }
 
-    internal int StaticEvaluation() {
+    internal int StaticEwawvaluation() {
         int bonus = 0;
         if (isPlayer1Turn == _isPlayer1Turn) {
             if (isPlayer1Turn) {

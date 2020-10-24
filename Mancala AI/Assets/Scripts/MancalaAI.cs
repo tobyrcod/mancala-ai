@@ -34,8 +34,6 @@ public static class MancalaAI {
         else {
             int minEval = int.MaxValue;
             List<int> possibleMoves = currentState.GetPossibleMoves();
-            if (depth == 3)
-                Debug.Log(currentState.isPlayer1Turn);
             foreach (int possibleMove in possibleMoves) {
                 Mancala possibleState = currentState.GetStateAfterMove(possibleMove);
                 int eval = Minimax(possibleState, depth - 1, alpha, beta, true);
